@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBIV Paper Coding Sheet Dashboard</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @media print {
+      body {
+        background-color: white !important;
+        color: #111827 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-shadow-none {
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+      /* Ensure radio buttons and checkboxes are perfectly visible in the PDF */
+      input[type="radio"], input[type="checkbox"] {
+        -webkit-appearance: none;
+        appearance: none;
+        border: 2px solid #4f46e5 !important;
+        border-radius: 4px;
+        width: 14px;
+        height: 14px;
+        position: relative;
+        top: 2px;
+        background-color: transparent !important;
+      }
+      input[type="radio"] {
+        border-radius: 50%;
+      }
+      input[type="radio"]:checked::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #4f46e5 !important;
+      }
+      input[type="checkbox"]:checked::after {
+        content: '✓';
+        position: absolute;
+        top: -3px;
+        left: 1px;
+        font-size: 10px;
+        font-weight: bold;
+        color: #4f46e5 !important;
+      }
+      /* Expand textareas to print their full contents instead of showing a scrollbar */
+      textarea {
+        border: none !important;
+        border-left: 2px solid #e2e8f0 !important;
+        padding-left: 8px !important;
+        background-color: transparent !important;
+        resize: none;
+        height: auto !important;
+      }
+      input[type="text"] {
+        border-bottom: 1px dashed #94a3b8 !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        background-color: transparent !important;
+        border-radius: 0 !important;
+      }
+      @page {
+        margin: 1.6cm;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- Header Banner -->
+  <header class="bg-indigo-900 text-white py-4 px-4 shadow-md no-print">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <i data-lucide="layers" class="text-indigo-300"></i>
+          SBIV Paper Coding Sheet
+        </h1>
+        <p class="text-indigo-200 text-xs mt-0.5">Provisional, Version 2 — Updated June 15, 2026 — One paper, one completed survey file</p>
+      </div>
+      <div class="hidden flex-wrap gap-2">
+        <button id="btn-load-all" class="bg-indigo-800 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1">
+          <i data-lucide="upload" class="w-3.5 h-3.5"></i> Load Workspace
+        </button>
+        <input type="file" id="file-input" class="hidden" accept=".json">
+        <button id="btn-export-all" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Workspace (.json)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <div class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
+    
+    <!-- Sidebar / Paper Manager -->
+    <aside class="hidden w-full lg:w-80 flex-shrink-0 space-y-4 no-print">
+      
+      <!-- Instructions Box -->
+      <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm">
+        <h2 class="font-bold text-amber-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
+          <i data-lucide="alert-circle" class="w-4 h-4 text-amber-600"></i> Requirements:
+        </h2>
+        <ul class="list-disc list-inside text-xs text-amber-800 mt-2 space-y-1">
+          <li><strong>Retain Source:</strong> Save highlighted PDFs of all surveyed papers.</li>
+          <li><strong>Mark Evidence:</strong> Highlight exact sentences, figures, or tables.</li>
+        </ul>
+      </div>
+
+      <!-- Workspace Papers List -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col h-[400px] lg:h-[550px]">
+        <div class="flex items-center justify-between pb-3 border-b mb-3">
+          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+            <i data-lucide="library" class="text-indigo-600 w-4 h-4"></i>
+            My Survey Library
+          </h3>
+          <span id="paper-count-badge" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">0 Papers</span>
+        </div>
+
+        <!-- Add paper trigger -->
+        <button id="btn-add-paper" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1 border border-dashed border-indigo-300 mb-3">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add New Paper
+        </button>
+
+        <!-- Paper item list container -->
+        <div id="papers-list" class="flex-grow overflow-y-auto space-y-2 pr-1">
+          <div class="text-center text-slate-400 py-8 text-xs italic">
+            No papers added yet. Click 'Add New Paper' to get started!
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Form Workspace -->
+    <main class="flex-grow max-w-5xl mx-auto w-full">
+      
+      <!-- No Paper Active View Placeholder -->
+      <div id="placeholder-view" class="bg-white p-12 rounded-xl border border-dashed border-slate-300 shadow-sm text-center flex flex-col items-center justify-center h-full min-h-[400px]">
+        <div class="p-4 bg-indigo-50 rounded-full text-indigo-600 mb-4">
+          <i data-lucide="book-open" class="w-12 h-12"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">No Paper Selected</h3>
+        <p class="text-slate-500 text-sm mt-1 max-w-sm mx-auto">Select a paper from your survey library or create a new one to start filling out the guided SBIV coding sheet.</p>
+        <button id="btn-add-paper-placeholder" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i> Create First Paper Entry
+        </button>
+      </div>
+
+      <!-- Active Form View -->
+      <form id="coding-sheet-form" class="space-y-6 hidden">
+
+        <!-- Section: Metadata -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <h2 class="text-lg font-bold text-indigo-900 border-b pb-3 mb-4 flex items-center gap-2">
+            <i data-lucide="book-open" class="text-indigo-600"></i> Document Information
+          </h2>
+          <div class="no-print mb-4 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600">
+            Unanswered items will be recorded as <strong>NO RESPONSE</strong> in the downloaded survey. If a question does not apply to the paper, choose <strong>NOT APPLICABLE</strong> when that option is provided.
+          </div>
+          <div class="no-print mb-4 bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-xs text-indigo-950">
+            <strong>How to code TRUE / FALSE / UNSPECIFIED for method and reporting items:</strong>
+            Choose <strong>TRUE</strong> when the paper considered the issue and did it. Choose <strong>FALSE</strong> only when the paper considered the issue and says it did not do it, or explains why it was not done. Choose <strong>UNSPECIFIED</strong> when no mention was made. Some later categorical questions define their own labels in the guidance.
+          </div>
+          <div class="no-print mb-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-3 text-xs text-amber-900">
+            <strong>Source highlighting required:</strong> Each student must keep their own highlighted copy of the paper. Highlight every sentence, figure, table, legend, or statistical result used to answer this survey so the completed coding sheet can be checked against the source.
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="meta-surveyor" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Survey Completed By</label>
+              <input type="text" id="meta-surveyor" placeholder="Your name" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+            </div>
+            <div>
+              <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Personal Highlighted PDF Available?</span>
+              <div class="flex gap-3">
+                <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm transition">
+                  <input type="radio" name="meta-highlighted-available" value="YES" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                  <span class="font-medium text-slate-700">YES</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm transition">
+                  <input type="radio" name="meta-highlighted-available" value="NO" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                  <span class="font-medium text-slate-700">NO</span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label for="meta-title" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Title (first few words)</label>
+              <input type="text" id="meta-title" placeholder="e.g., Sex differences in spatial memory..." class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+            </div>
+            <div>
+              <label for="meta-author" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">First Author</label>
+              <input type="text" id="meta-author" placeholder="e.g., Smith et al." class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+            </div>
+            <div>
+              <label for="meta-year" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Year</label>
+              <input type="text" id="meta-year" placeholder="e.g., 2025" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+            </div>
+            <div>
+              <label for="meta-pmid" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">PMID</label>
+              <input type="text" id="meta-pmid" placeholder="e.g., 34567890" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+            </div>
+          </div>
+        </div>
+
+        <!-- Question 1 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <p class="font-semibold text-slate-900 text-sm mb-2">1. Were sex differences claimed in the title/abstract?</p>
+          
+          <!-- Helper Accordion -->
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>Where to look:</strong> The very top header (Title) and the introductory/summary section (Abstract).</p>
+              <p><strong>TRUE Example:</strong> <span class="italic font-serif">"We identified sex-specific cognitive profiles..."</span> or <span class="italic font-serif">"...revealing that male rats, but not females, exhibited deficits."</span></p>
+              <p><strong>FALSE Example:</strong> <span class="italic font-serif">"We investigated the role of receptors in male and female rats."</span> No difference is claimed; the abstract simply states that both sexes were investigated.</p>
+              <p><strong>UNSPECIFIED:</strong> Use only if the title/abstract cannot be checked or is missing from the available paper copy.</p>
+            </div>
+          </details>
+
+          <div class="flex flex-wrap gap-4">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-sm transition">
+              <input type="radio" name="q1" value="TRUE" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+              <span>TRUE</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-sm transition">
+              <input type="radio" name="q1" value="FALSE" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+              <span>FALSE</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-sm transition">
+              <input type="radio" name="q1" value="UNSPECIFIED" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+              <span>UNSPECIFIED</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Question 2 (Mitigation Multi-part) -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <h3 class="font-bold text-indigo-900 border-b pb-2 mb-2 text-sm uppercase tracking-wider">
+            2. Were steps taken to mitigate the following sex-related procedural confounds?
+          </h3>
+
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>Where to look:</strong> The "Methods" section, specifically subheadings labeled <span class="italic">Animals / Subjects</span>, <span class="italic">Experimental Design</span>, or <span class="italic">Apparatus</span>.</p>
+              <p><strong>Why this matters:</strong> Hormonal, environmental, olfactory, and circadian variables differ significantly between sexes. If steps are not taken to isolate or counterbalance these factors, apparent "sex differences" in physiology or behavior may actually be environmental artifacts.</p>
+            </div>
+          </details>
+          
+          <div class="space-y-4 divide-y divide-slate-100">
+            
+            <!-- Age -->
+            <div class="pt-3 first:pt-0">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="max-w-xl">
+                  <span class="font-semibold text-slate-800 text-sm">Age</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Were specific ages given for each sex individually?</p>
+                  <details class="mt-1 text-[11px] no-print">
+                    <summary class="cursor-pointer text-indigo-700 font-semibold">Examples</summary>
+                    <p class="text-slate-500 italic mt-1"><strong>Pass:</strong> "Males and females were both tested at postnatal day 60." | <strong>Fail:</strong> "We utilized young adult rats." (Too vague).</p>
+                  </details>
+                </div>
+                <div class="flex gap-2 self-start md:self-center">
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_age" value="TRUE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>TRUE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_age" value="FALSE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>FALSE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_age" value="UNSPECIFIED" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>UNSPECIFIED</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Weight -->
+            <div class="pt-3">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="max-w-xl">
+                  <span class="font-semibold text-slate-800 text-sm">Weight</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Were specific weights given for each sex?</p>
+                  <details class="mt-1 text-[11px] no-print">
+                    <summary class="cursor-pointer text-indigo-700 font-semibold">Examples</summary>
+                    <p class="text-slate-500 italic mt-1"><strong>Pass:</strong> "Males (250-300g) and females (180-220g) were..." | <strong>Fail:</strong> "Rats weighed approximately 250g." (Omits female-specific weights).</p>
+                  </details>
+                </div>
+                <div class="flex gap-2 self-start md:self-center">
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_weight" value="TRUE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>TRUE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_weight" value="FALSE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>FALSE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_weight" value="UNSPECIFIED" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>UNSPECIFIED</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Housing -->
+            <div class="pt-3">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="max-w-xl">
+                  <span class="font-semibold text-slate-800 text-sm">Housing</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Were any pertinent sex-related housing details given?</p>
+                  <details class="mt-1 text-[11px] no-print">
+                    <summary class="cursor-pointer text-indigo-700 font-semibold">Examples</summary>
+                    <p class="text-slate-500 italic mt-1"><strong>Pass:</strong> "Animals were housed in same-sex cages of 4..." or "Housed in separate male/female holding rooms to prevent olfactory exposure."</p>
+                  </details>
+                </div>
+                <div class="flex gap-2 self-start md:self-center">
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_housing" value="TRUE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>TRUE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_housing" value="FALSE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>FALSE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_housing" value="UNSPECIFIED" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>UNSPECIFIED</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cleaning -->
+            <div class="pt-3">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="max-w-xl">
+                  <span class="font-semibold text-slate-800 text-sm">Cleaning</span>
+                  <p class="text-xs text-slate-500 mt-0.5">e.g., apparatus thoroughly cleaned between testing individual animals/sexes?</p>
+                  <details class="mt-1 text-[11px] no-print">
+                    <summary class="cursor-pointer text-indigo-700 font-semibold">Example</summary>
+                    <p class="text-slate-500 italic mt-1"><strong>Pass:</strong> "The maze was wiped clean with 70% ethanol and dried between trials to eliminate pheromonal trails."</p>
+                  </details>
+                </div>
+                <div class="flex gap-2 self-start md:self-center">
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_cleaning" value="TRUE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>TRUE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_cleaning" value="FALSE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>FALSE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_cleaning" value="UNSPECIFIED" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>UNSPECIFIED</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dedicated Apparatus -->
+            <div class="pt-3">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="max-w-xl">
+                  <span class="font-semibold text-slate-800 text-sm">Dedicated Apparatus</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Were dedicated separate apparatus units used for each sex to prevent cross-contamination?</p>
+                  <details class="mt-1 text-[11px] no-print">
+                    <summary class="cursor-pointer text-indigo-700 font-semibold">Example</summary>
+                    <p class="text-slate-500 italic mt-1"><strong>Pass:</strong> "To avoid cross-sex odor cues, separate identical open-field chambers were designated for males vs. females."</p>
+                  </details>
+                </div>
+                <div class="flex gap-2 self-start md:self-center">
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_dedicated" value="TRUE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>TRUE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_dedicated" value="FALSE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>FALSE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_dedicated" value="UNSPECIFIED" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>UNSPECIFIED</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Counterbalancing for sex (Testing Sequence / Circadian) -->
+            <div class="pt-3">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="max-w-xl">
+                  <span class="font-semibold text-slate-800 text-sm">Sequence & Time-of-Day Counterbalancing</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Were testing sequences randomized or interleaved to avoid circadian time-of-day biases between sexes?</p>
+                  <details class="mt-1 text-[11px] no-print">
+                    <summary class="cursor-pointer text-indigo-700 font-semibold">Examples</summary>
+                    <p class="text-slate-500 italic mt-1">
+                      <strong>Pass:</strong> "Testing sequence was randomized across sex so that males and females were interleaved throughout the morning and afternoon." <br>
+                      <strong>Fail:</strong> "All male rats were run between 8:00 AM and noon, and all female rats were run between 1:00 PM and 5:00 PM."
+                    </p>
+                  </details>
+                </div>
+                <div class="flex gap-2 self-start md:self-center">
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_counter_sex" value="TRUE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>TRUE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_counter_sex" value="FALSE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>FALSE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_counter_sex" value="UNSPECIFIED" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>UNSPECIFIED</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Batch / Temporal Counterbalancing (Weeks / Batches) -->
+            <div class="pt-3">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="max-w-xl">
+                  <span class="font-semibold text-slate-800 text-sm">Batch & Temporal Counterbalancing</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Were male and female subjects tested in parallel batches? (To avoid environmental, seasonal, or shipping confounds)</p>
+                  <details class="mt-1 text-[11px] no-print">
+                    <summary class="cursor-pointer text-indigo-700 font-semibold">Examples</summary>
+                    <p class="text-slate-500 italic mt-1">
+                      <strong>Pass:</strong> "Animals were run in 3 parallel experimental batches, with each batch containing equal cohorts of males and females." <br>
+                      <strong>Fail:</strong> "Due to supply limitations, male behavioral assays were performed in March, and female assays were completed in May." or "Batch 1 consisted of males, Batch 2 consisted of females."
+                    </p>
+                  </details>
+                </div>
+                <div class="flex gap-2 self-start md:self-center">
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_counter_batch" value="TRUE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>TRUE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_counter_batch" value="FALSE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>FALSE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_counter_batch" value="UNSPECIFIED" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>UNSPECIFIED</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other measures -->
+            <div class="pt-3">
+              <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="max-w-xl">
+                  <span class="font-semibold text-slate-800 text-sm">Other Measures Detailed</span>
+                  <p class="text-xs text-slate-500 mt-0.5">e.g., was the sex of the experimenter noted, or were standardized handling protocols details given?</p>
+                  <details class="mt-1 text-[11px] no-print">
+                    <summary class="cursor-pointer text-indigo-700 font-semibold">Examples</summary>
+                    <p class="text-slate-500 italic mt-1"><strong>Pass:</strong> "All behavioral testing was completed by a female investigator to avoid male experimenter scent-induced stress." or "Male and female mice were handled by the same investigator using identical handling tunnels to standardize baseline handler stress."</p>
+                  </details>
+                  <div class="mt-3">
+                    <label for="q2-other-details" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">If yes, briefly describe the measure</label>
+                    <input type="text" id="q2-other-details" placeholder="e.g., experimenter sex, standardized handling protocol, scent controls" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-xs">
+                  </div>
+                </div>
+                <div class="flex gap-2 self-start md:self-center">
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_other" value="TRUE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>TRUE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_other" value="FALSE" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>FALSE</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs">
+                    <input type="radio" name="q2_other" value="UNSPECIFIED" class="w-3.5 h-3.5 text-indigo-600">
+                    <span>UNSPECIFIED</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <p class="font-semibold text-slate-900 text-sm mb-2">3. Did the study follow ARRIVE guidelines?</p>
+          
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>Where to look:</strong> Usually in the "Ethics Statement", "Declarations", or the end of the "Methods" section.</p>
+              <p><strong>TRUE Example:</strong> <span class="italic font-serif">"This study is reported in compliance with ARRIVE guidelines (Animal Research: Reporting of In Vivo Experiments)..."</span></p>
+              <p><strong>FALSE Example:</strong> The paper has ethical approval from an institutional board (e.g., IACUC) but never explicitly mentions conforming to the specific ARRIVE checklist standards.</p>
+            </div>
+          </details>
+
+          <div class="flex gap-4">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-sm transition">
+              <input type="radio" name="q3" value="TRUE" class="w-4 h-4 text-indigo-600">
+              <span>TRUE</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-sm transition">
+              <input type="radio" name="q3" value="FALSE" class="w-4 h-4 text-indigo-600">
+              <span>FALSE</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-sm transition">
+              <input type="radio" name="q3" value="UNSPECIFIED" class="w-4 h-4 text-indigo-600">
+              <span>UNSPECIFIED</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <p class="font-semibold text-slate-900 text-sm mb-2">4. What was the study design?</p>
+          
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>FACTORIAL:</strong> The researchers treated Sex as an explicit independent variable in their main models. For example, a 2 x 2 design: Sex (Male, Female) x Treatment (Drug, Vehicle).</p>
+              <p><strong>POOLED:</strong> Both sexes were used, but their data were combined into a single statistical group for all results. Sex-specific differences were ignored in the main analysis.</p>
+              <p><strong>BOTH:</strong> The researchers compared sexes directly for some primary metrics (Factorial), but combined/pooled them for other downstream measures, such as molecular assays or histology (often due to smaller tissue cohorts).</p>
+              <p><strong>UNCLEAR:</strong> Use when the paper includes both sexes but the design or analysis is not described clearly enough to classify.</p>
+            </div>
+          </details>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q4" value="FACTORIAL" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-slate-800">FACTORIAL</span>
+                <span class="text-xs text-slate-500">Designed to compare sexes directly</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q4" value="POOLED" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-slate-800">POOLED</span>
+                <span class="text-xs text-slate-500">Sexes combined / no regard for sex given</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q4" value="BOTH" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-slate-800">BOTH</span>
+                <span class="text-xs text-slate-500">Elements of both styles used</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q4" value="UNCLEAR" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-slate-800">UNCLEAR</span>
+                <span class="text-xs text-slate-500">Cannot classify from reporting</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Question 5 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <p class="font-semibold text-slate-900 text-sm mb-2">5. Was the study explicitly/deliberately powered to detect sex differences / interactions?</p>
+          
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>Where to look:</strong> Usually in the "Statistical Analysis" or "Sample Size" subsections of Methods.</p>
+              <p><strong>TRUE Example:</strong> <span class="italic font-serif">"An a priori power calculation was conducted using G*Power. To detect a medium Treatment x Sex interaction effect with 80% power, a minimum of n = 10 per cohort was required."</span></p>
+              <p><strong>FALSE Example:</strong> They explicitly state that no power calculation was performed, or that the study was not powered to test sex differences.</p>
+              <p><strong>UNSPECIFIED Example:</strong> No relevant sample size or power calculation is discussed.</p>
+            </div>
+          </details>
+
+          <div class="flex flex-wrap gap-3">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2.5 text-sm transition">
+              <input type="radio" name="q5" value="TRUE" class="w-4 h-4 text-indigo-600">
+              <span>TRUE</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2.5 text-sm transition">
+              <input type="radio" name="q5" value="FALSE" class="w-4 h-4 text-indigo-600">
+              <span>FALSE</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2.5 text-sm transition">
+              <input type="radio" name="q5" value="UNSPECIFIED" class="w-4 h-4 text-indigo-600">
+              <span>UNSPECIFIED</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-4 py-2.5 text-sm transition">
+              <input type="radio" name="q5" value="NOT APPLICABLE" class="w-4 h-4 text-indigo-600">
+              <span>NOT APPLICABLE</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Question 6 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <p class="font-semibold text-slate-900 text-sm mb-2">6. Were any statistical assumptions checked?</p>
+          <p class="text-xs text-slate-500 mb-2">(e.g., normality, homogeneity of variance)</p>
+          
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>Where to look:</strong> "Statistical Analysis" subsection.</p>
+              <p><strong>IN ALL CASES Example:</strong> <span class="italic font-serif">"All behavioral data sets were tested for normal distribution using the Shapiro-Wilk test, and homoscedasticity was verified using Levene's test before parametric tests were run."</span></p>
+              <p><strong>IN SOME CASES Example:</strong> They check assumptions only for specific measures, or write: <span class="italic font-serif">"Data that failed normality were analyzed using non-parametric Friedman tests."</span> without detailing the checks for other data groups.</p>
+              <p><strong>FALSE vs UNSPECIFIED:</strong> Choose FALSE only if the paper explicitly says assumption checks were not performed or were deemed unnecessary. Choose UNSPECIFIED if assumption checks are simply not mentioned.</p>
+            </div>
+          </details>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q6" value="IN ALL CASES" class="w-4 h-4 text-indigo-600">
+              <span>IN ALL CASES</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q6" value="IN SOME CASES" class="w-4 h-4 text-indigo-600">
+              <span>IN SOME CASES</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q6" value="FALSE" class="w-4 h-4 text-indigo-600">
+              <span>FALSE</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q6" value="UNSPECIFIED" class="w-4 h-4 text-indigo-600">
+              <span>UNSPECIFIED</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Question 7 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <p class="font-semibold text-slate-900 text-sm mb-2">7. Statistical method:</p>
+          <p class="text-xs text-slate-500 mb-2">CHECK ALL THAT APPLY.</p>
+
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>ANOVAs:</strong> Look for terms like <span class="italic">Two-Way ANOVA, Three-Way ANOVA, Repeated Measures ANOVA, or ANCOVA</span>.</p>
+              <p><strong>Linear mixed models (LMM):</strong> Look for terms like <span class="italic">generalized linear mixed effects, random intercepts, nested design, or hierarchical models</span>.</p>
+              <p><strong>Regression/correlation:</strong> Look for terms like <span class="italic">Pearson's r, Spearman's rank, multiple linear regression, or logistic regression</span>.</p>
+              <p><strong>No method described / unable to determine:</strong> Use these when the statistical approach is missing or too vague to code confidently.</p>
+            </div>
+          </details>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="checkbox" name="q7" value="ANOVAs" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+              <span>ANOVAS</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="checkbox" name="q7" value="Linear mixed models" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+              <span>LINEAR MIXED MODELS</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="checkbox" name="q7" value="Regression/correlation" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+              <span>REGRESSION/CORRELATION</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="checkbox" name="q7" value="Other" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+              <span>OTHER</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="checkbox" name="q7" value="No statistical method described" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+              <span>NO STATISTICAL METHOD DESCRIBED</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="checkbox" name="q7" value="Unable to determine" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+              <span>UNABLE TO DETERMINE</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Question 8 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <p class="font-semibold text-slate-900 text-sm mb-2">8. Were sex-related confounders included in the analysis?</p>
+          <p class="text-xs text-slate-500 mb-2">(e.g., body weight)</p>
+
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>Why this matters:</strong> Since male and female test subjects can vary inherently in body weight, brain size, or metabolic rates, researchers must explicitly account for these differences in their statistical models to ensure they aren't misinterpreting weight differences as sex differences.</p>
+              <p><strong>IN ALL CASES Example:</strong> They analyze weight as an interactive covariate in ANCOVA or mixed models across every trial.</p>
+              <p><strong>IN SOME CASES Example:</strong> They only control for weight in metabolic trials but not in behavioral tasks.</p>
+              <p><strong>FALSE vs UNSPECIFIED:</strong> Choose FALSE only if the paper explicitly says relevant confounders were not included or were considered unnecessary. Choose UNSPECIFIED if the analysis simply does not mention them.</p>
+            </div>
+          </details>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q8" value="IN ALL CASES" class="w-4 h-4 text-indigo-600">
+              <span>IN ALL CASES</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q8" value="IN SOME CASES" class="w-4 h-4 text-indigo-600">
+              <span>IN SOME CASES</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q8" value="FALSE" class="w-4 h-4 text-indigo-600">
+              <span>FALSE</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q8" value="UNSPECIFIED" class="w-4 h-4 text-indigo-600">
+              <span>UNSPECIFIED</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q8" value="NOT APPLICABLE" class="w-4 h-4 text-indigo-600">
+              <span>NOT APPLICABLE</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Sex-Difference Statistical Evidence Block -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <h3 class="font-bold text-indigo-900 border-b pb-2 mb-2 text-sm uppercase tracking-wider">
+            Sex-Difference Statistical Evidence
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">These questions ask whether the paper's sex-related conclusions were based on direct statistical tests of sex, rather than indirect comparisons.</p>
+
+          <p class="font-semibold text-slate-900 text-sm mb-2">9. Was sex included in the main statistical analysis?</p>
+          <p class="text-xs text-slate-500 mb-2">(e.g., did the ANOVA, regression, mixed model, or other main test include sex?)</p>
+
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>Plain meaning:</strong> Did the authors test sex as part of the same analysis as the other variables, rather than only looking at males and females separately?</p>
+              <p><strong>Sex included as factor:</strong> <span class="italic font-serif">"Data were analyzed using a two-way ANOVA with Treatment and Sex as factors."</span></p>
+              <p><strong>Sex analyzed separately:</strong> The authors ran male-only and female-only analyses, but did not test sex in one shared model.</p>
+              <p><strong>Sex not included:</strong> The paper used both sexes but pooled them, ignored sex, or analyzed an outcome without sex in the model.</p>
+              <p><strong>Unclear:</strong> Use this when the paper's statistical description is too vague to tell how sex was handled.</p>
+            </div>
+          </details>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q9" value="SEX INCLUDED AS FACTOR" class="w-4 h-4 text-indigo-600">
+              <span>SEX INCLUDED AS FACTOR</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q9" value="SEX ANALYZED SEPARATELY" class="w-4 h-4 text-indigo-600">
+              <span>SEX ANALYZED SEPARATELY</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q9" value="SEX NOT INCLUDED" class="w-4 h-4 text-indigo-600">
+              <span>SEX NOT INCLUDED</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q9" value="UNCLEAR" class="w-4 h-4 text-indigo-600">
+              <span>UNCLEAR</span>
+            </label>
+          </div>
+
+          <div class="mt-5 pt-4 border-t border-slate-100">
+            <p class="font-semibold text-slate-900 text-sm mb-2">10. What direct sex-related statistical evidence was reported?</p>
+            <p class="text-xs text-slate-500 mb-2">CHECK ALL THAT APPLY. A paper may report both a main effect of sex and one or more interactions involving sex.</p>
+
+            <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+              <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+              </summary>
+              <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+                <p><strong>Why this matters:</strong> A valid sex-related conclusion can be supported by either a main effect of sex or an interaction involving sex. Which one matters depends on the claim.</p>
+                <p><strong>Main effect of sex:</strong> This supports a broad statement that males and females differed overall, averaged across the other factors in the model. Example: <span class="italic font-serif">"There was a significant main effect of Sex, F(1,36) = 6.12, p = 0.018."</span></p>
+                <p><strong>Sex x Factor interaction:</strong> This supports a claim that the sex difference depended on another variable, such as treatment, stress, time, genotype, dose, or condition. Example: <span class="italic font-serif">"A two-way ANOVA revealed a significant Treatment x Sex interaction, F(1,36) = 5.84, p = 0.021."</span></p>
+                <p><strong>Conditional sex-difference claim:</strong> If the authors say males and females differed only under a certain condition, that is still a sex-based claim. Examples include "under high stress but not low stress," "after drug but not vehicle," "at later trials but not early trials," or "only at the high dose." Look for an interaction involving Sex and that condition, such as Sex x Stress, Sex x Treatment, Sex x Trial, or Sex x Dose. For repeated extinction or learning curves, this may be a higher-order interaction such as Sex x Stress x Trial.</p>
+                <p><strong>Rule of thumb:</strong> If authors claim one sex differs from the other overall, look for a main effect of sex or direct sex contrast. If they claim a treatment/condition affected males differently than females, look for a Sex x Factor interaction. Follow-up contrasts can help describe where an interaction occurs, but they do not replace the interaction test.</p>
+                <p><strong>Conditional claim but analysis unclear:</strong> Use this when the authors make a condition-specific sex claim, but you cannot find a corresponding Sex x Factor interaction or shared model.</p>
+                <p><strong>Unspecified / unclear:</strong> Use this when the paper's statistical reporting is too vague to decide what direct sex-related evidence was reported.</p>
+                <p><strong>NO Example:</strong> The authors discuss males and females but never report a main effect of sex, direct sex contrast, or interaction involving sex.</p>
+                <p><strong>Multiple answers:</strong> Select both MAIN EFFECT OF SEX and SEX X FACTOR INTERACTION if both are reported. Use NO DIRECT SEX TEST REPORTED or UNSPECIFIED / UNCLEAR only when the direct evidence options do not apply.</p>
+              </div>
+            </details>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="checkbox" name="q10" value="MAIN EFFECT OF SEX" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                <span>MAIN EFFECT OF SEX</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="checkbox" name="q10" value="SEX X FACTOR INTERACTION" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                <span>SEX X FACTOR INTERACTION</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="checkbox" name="q10" value="CONDITIONAL CLAIM ANALYSIS UNCLEAR" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                <span>CONDITIONAL CLAIM; ANALYSIS UNCLEAR</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="checkbox" name="q10" value="NO DIRECT SEX TEST REPORTED" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                <span>NO DIRECT SEX TEST REPORTED</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="checkbox" name="q10" value="UNSPECIFIED / UNCLEAR" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                <span>UNSPECIFIED / UNCLEAR</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-5 pt-4 border-t border-slate-100">
+            <p class="font-semibold text-slate-900 text-sm mb-2">11. For claims about another factor, did the paper infer a sex difference because one sex was significant and the other was not?</p>
+            <p class="text-xs text-slate-500 mb-2">Use NO SUCH CLAIM if the paper only made a simple male-vs-female comparison or made no sex-difference claim about another factor.</p>
+
+            <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+              <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+              </summary>
+              <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200 bg-rose-50/50 p-2.5 rounded">
+                <p class="text-rose-900 font-semibold">The critical statistical trap</p>
+                <p>This applies when the authors are talking about another factor, such as treatment, genotype, dose, time, stress, lesion, trial, or condition.</p>
+                <p><strong>Conditional claim examples:</strong> "Under high stress, males extinguished faster than females, but not under low stress." "Females responded more strongly to the high dose." "Sex differences appeared only at later trials."</p>
+                <p><strong>Problem example:</strong> <span class="italic font-serif">"The drug significantly increased exploration in males (p < 0.05), but had no effect in females (p > 0.05); therefore, a sex difference was observed."</span></p>
+                <p>The problem is comparing separate p-values or significance labels across sexes. A significant result in one sex and a non-significant result in the other does not prove the sexes differ from each other.</p>
+                <p><strong>What to look for instead:</strong> A Sex x Factor interaction in the shared model. Follow-up contrasts may describe the pattern after an interaction, but the sex-difference claim should not rest only on separate within-sex tests.</p>
+                <p><strong>NO SUCH CLAIM:</strong> Use this if the paper does not make this kind of conditional claim. For example, the claim is simply that males and females differ overall, which can be supported by a main effect of sex when sex has two levels.</p>
+              </div>
+            </details>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q11" value="YES" class="w-4 h-4 text-indigo-600">
+                <span>YES</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q11" value="PARTLY" class="w-4 h-4 text-indigo-600">
+                <span>PARTLY</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q11" value="NO" class="w-4 h-4 text-indigo-600">
+                <span>NO</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q11" value="UNSPECIFIED / UNCLEAR" class="w-4 h-4 text-indigo-600">
+                <span>UNSPECIFIED / UNCLEAR</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q11" value="NO SUCH CLAIM" class="w-4 h-4 text-indigo-600">
+                <span>NO SUCH CLAIM</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-5 pt-4 border-t border-slate-100">
+            <p class="font-semibold text-slate-900 text-sm mb-2">12. Overall, were the sex-difference conclusions statistically justified?</p>
+
+            <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+              <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+              </summary>
+              <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+                <p><strong>YES:</strong> Sex-related conclusions are supported by direct tests of sex or Sex x Factor terms.</p>
+                <p><strong>PARTLY:</strong> Some sex-related conclusions are supported, but others are overstated or only indirectly supported.</p>
+                <p><strong>NO:</strong> The paper makes sex-difference claims without direct statistical support.</p>
+                <p><strong>UNABLE TO DETERMINE:</strong> Use when the reporting is too unclear to judge the statistical support.</p>
+                <p><strong>NO CLAIM MADE:</strong> The paper includes both sexes but does not claim a sex difference.</p>
+              </div>
+            </details>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q12" value="YES" class="w-4 h-4 text-indigo-600">
+                <span>YES</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q12" value="PARTLY" class="w-4 h-4 text-indigo-600">
+                <span>PARTLY</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q12" value="NO" class="w-4 h-4 text-indigo-600">
+                <span>NO</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q12" value="UNABLE TO DETERMINE" class="w-4 h-4 text-indigo-600">
+                <span>UNABLE TO DETERMINE</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+                <input type="radio" name="q12" value="NO CLAIM MADE" class="w-4 h-4 text-indigo-600">
+                <span>NO CLAIM MADE</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-5 pt-4 border-t border-slate-100">
+            <label for="field-sex-evidence-anchor" class="block font-semibold text-slate-900 text-sm mb-2">Evidence and comments for Q9-12:</label>
+            <p class="text-xs text-slate-500 mb-2">Include one short anchor quote/statistic, plus any uncertainty or concern about the coding. If no sex-difference claim was made, write "no claim made."</p>
+            <textarea id="field-sex-evidence-anchor" rows="3" maxlength="900" placeholder="e.g., Treatment x Sex interaction, F(1,36) = 5.84, p = 0.021. Unsure whether this applies to all outcomes." class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm"></textarea>
+          </div>
+        </div>
+
+        <!-- Question 13 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <p class="font-semibold text-slate-900 text-sm mb-2">13. Group sizes ("n") specified for each sex?</p>
+
+          <details class="mb-4 text-xs bg-slate-50 rounded-lg border border-slate-150 p-2.5 no-print">
+            <summary class="font-semibold text-indigo-700 cursor-pointer hover:text-indigo-900 flex items-center gap-1 outline-none">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Show Scientific Guidance & Examples
+            </summary>
+            <div class="mt-2 text-slate-650 space-y-2 pl-4 border-l-2 border-indigo-200">
+              <p><strong>Where to look:</strong> Methods, figure legends, tables, or plots that report sex-specific sample sizes (e.g., "n = 8 males and n = 8 females").</p>
+              <p><strong>TRUE - Explicitly described:</strong> The paper states the exact sample numbers per group in the text or legend.</p>
+              <p><strong>TRUE - Recoverable from figures/tables:</strong> The sex-specific sample size is not typed out, but it can be clearly recovered by counting individual data points or reading a table/legend.</p>
+              <p><strong>Range only / unclear:</strong> The paper gives an approximate range, such as "7-10 animals per group," but does not make clear which sex or experimental group had which n.</p>
+              <p><strong>Important caution:</strong> Degrees of freedom may help estimate total analytic sample size in simple designs, but they usually cannot prove male/female group balance or sex-specific n unless the model structure and unit of analysis are explicitly clear.</p>
+              <p><strong>FALSE:</strong> Group sizes are reported, but not in a way that answers the sex-specific n question.</p>
+              <p><strong>UNSPECIFIED:</strong> No usable group-size information is mentioned.</p>
+            </div>
+          </details>
+
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q13" value="TRUE_EXPLICIT" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-emerald-700">TRUE</span>
+                <span class="text-xs text-slate-500">Explicitly described</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q13" value="TRUE_DEDUCIBLE" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-blue-700">TRUE</span>
+                <span class="text-xs text-slate-500">Recoverable from figures/tables</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q13" value="RANGE_UNCLEAR" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-amber-700">PARTIAL</span>
+                <span class="text-xs text-slate-500">Range only / unclear groups</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q13" value="FALSE" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-rose-700">FALSE</span>
+                <span class="text-xs text-slate-500">Group sizes not sex-specific</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
+              <input type="radio" name="q13" value="UNSPECIFIED" class="mt-1 w-4 h-4 text-indigo-600">
+              <div>
+                <span class="font-semibold block text-slate-700">UNSPECIFIED</span>
+                <span class="text-xs text-slate-500">No usable n reported</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+          <label for="field-notes" class="block font-semibold text-slate-900 text-sm mb-2">Notes specific to this article:</label>
+          <textarea id="field-notes" rows="5" placeholder="Add additional observations, quote specific passages/figures, or make comments about the statistical power/design here..." class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm"></textarea>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="no-print bg-slate-100 border border-slate-200 p-4 rounded-xl flex flex-wrap justify-between items-center gap-3">
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <i data-lucide="info" class="w-4 h-4 text-indigo-500"></i> Before downloading, make sure every coded answer is supported by highlights in your own PDF copy
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="btn-clear-form" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold py-2 px-4 rounded-lg text-sm transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Clear Form
+            </button>
+            <button type="button" id="btn-print" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 px-4 rounded-lg text-sm transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="printer" class="w-4 h-4"></i> Print / Save PDF
+            </button>
+            <button type="button" id="btn-submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-5 rounded-lg text-sm transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="download" class="w-4 h-4"></i> Download Completed Survey
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </main>
+  </div>
+
+  <!-- Report Modal / Output Block -->
+  <div id="modal-container" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-xl border border-slate-100 flex flex-col max-h-[85vh]">
+      <div class="p-5 border-b flex justify-between items-center bg-indigo-50 rounded-t-2xl">
+        <h3 class="font-bold text-indigo-900 flex items-center gap-2">
+          <i data-lucide="sparkles" class="text-indigo-600"></i>
+          Consolidated Survey Workspace Report
+        </h3>
+        <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-grow">
+        <div class="mb-4">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Export Scope</label>
+          <div class="flex gap-3">
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs">
+              <input type="radio" name="export-scope" value="all" checked class="w-3.5 h-3.5 text-indigo-600">
+              <span>All Workspace Papers (<span class="export-count-all">0</span>)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs">
+              <input type="radio" name="export-scope" value="current" class="w-3.5 h-3.5 text-indigo-600">
+              <span>Currently Selected Paper Only</span>
+            </label>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 mb-3">Copy the markdown text below to upload/share or paste directly into your Canvas submission box.</p>
+        <textarea id="output-markdown" readonly class="w-full h-80 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"></textarea>
+      </div>
+      <div class="p-4 border-t bg-slate-50 rounded-b-2xl flex justify-end gap-2">
+        <button id="btn-copy" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition flex items-center gap-1.5">
+          <i data-lucide="copy" class="w-4 h-4"></i> Copy to Clipboard
+        </button>
+        <button id="btn-done" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-lg text-sm transition">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none no-print"></div>
+
+  <!-- Script logic -->
+  <script>
+    // App State
+    let papers = [];
+    let activePaperId = null;
+
+    // Elements
+    const form = document.getElementById('coding-sheet-form');
+    const placeholderView = document.getElementById('placeholder-view');
+    const papersListContainer = document.getElementById('papers-list');
+    const paperCountBadge = document.getElementById('paper-count-badge');
+    
+    // Buttons
+    const btnAddPaper = document.getElementById('btn-add-paper');
+    const btnAddPaperPlaceholder = document.getElementById('btn-add-paper-placeholder');
+    const btnExportAll = document.getElementById('btn-export-all');
+    const btnLoadAll = document.getElementById('btn-load-all');
+    const fileInput = document.getElementById('file-input');
+    const btnPrint = document.getElementById('btn-print');
+    const btnSubmit = document.getElementById('btn-submit');
+    const btnClearForm = document.getElementById('btn-clear-form');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    const btnDone = document.getElementById('btn-done');
+    const btnCopy = document.getElementById('btn-copy');
+    const modal = document.getElementById('modal-container');
+    const markdownOutput = document.getElementById('output-markdown');
+    const toastContainer = document.getElementById('toast-container');
+
+    // Init Lucide
+    lucide.createIcons();
+
+    // Helper: Show Custom Toast
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `flex items-center gap-2 px-4 py-3 rounded-lg shadow-md transition-all duration-300 transform translate-y-2 opacity-0 mb-2 pointer-events-auto ${
+        type === 'success' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-white'
+      }`;
+      const iconName = type === 'success' ? 'check-circle' : 'info';
+      toast.innerHTML = `
+        <i data-lucide="${iconName}" class="w-5 h-5 flex-shrink-0"></i>
+        <span class="text-xs font-semibold">${message}</span>
+      `;
+      toastContainer.appendChild(toast);
+      lucide.createIcons({attrs: {class: 'w-4 h-4'}});
+
+      setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 50);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Generate Unique ID
+    function generateId() {
+      return 'paper_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Default Empty Paper Structure
+    function createEmptyPaper() {
+      return {
+        id: generateId(),
+        metadata: { surveyor: '', highlightedAvailable: '', title: '', author: '', year: '', pmid: '' },
+        q1: '',
+        q2: { age: '', weight: '', housing: '', cleaning: '', dedicated: '', counter_sex: '', counter_batch: '', other: '', otherDetails: '' },
+        q3: '', q4: '', q5: '', q6: '', q7: '', q8: '', q9: '', q10: '', q11: '', q12: '', q13: '',
+        sexEvidenceAnchor: '',
+        notes: ''
+      };
+    }
+
+    // Refresh Sidebar View
+    function renderPapersList() {
+      papersListContainer.innerHTML = '';
+      paperCountBadge.textContent = `${papers.length} Paper${papers.length !== 1 ? 's' : ''}`;
+      document.querySelectorAll('.export-count-all').forEach(el => el.textContent = papers.length);
+
+      if (papers.length === 0) {
+        papersListContainer.innerHTML = `
+          <div class="text-center text-slate-400 py-8 text-xs italic">
+            No papers added yet. Click 'Add New Paper' to get started!
+          </div>
+        `;
+        placeholderView.classList.remove('hidden');
+        form.classList.add('hidden');
+        activePaperId = null;
+        return;
+      }
+
+      papers.forEach((paper) => {
+        const item = document.createElement('div');
+        const isSelected = paper.id === activePaperId;
+        
+        // Compute display values
+        const displayAuthor = paper.metadata.author || 'Unnamed Author';
+        const displayYear = paper.metadata.year ? ` (${paper.metadata.year})` : '';
+        const displayTitle = paper.metadata.title ? paper.metadata.title.substring(0, 30) + '...' : 'New Survey Entry';
+
+        item.className = `p-3 rounded-lg border text-left cursor-pointer transition flex flex-col gap-1 ${
+          isSelected 
+            ? 'bg-indigo-50 border-indigo-300 ring-1 ring-indigo-500/20' 
+            : 'bg-slate-50 hover:bg-slate-100 border-slate-200'
+        }`;
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-xs text-slate-800 truncate pr-2">${displayAuthor}${displayYear}</span>
+            <span class="text-[10px] uppercase font-bold text-slate-400">PMID: ${paper.metadata.pmid || 'N/A'}</span>
+          </div>
+          <p class="text-[11px] text-slate-500 italic truncate">${displayTitle}</p>
+        `;
+
+        item.addEventListener('click', () => {
+          selectPaper(paper.id);
+        });
+
+        papersListContainer.appendChild(item);
+      });
+    }
+
+    // Select active paper
+    function selectPaper(id) {
+      // Save current state first to prevent loss
+      saveCurrentActivePaperToState();
+      
+      activePaperId = id;
+      const paper = papers.find(p => p.id === id);
+      if (!paper) return;
+
+      placeholderView.classList.add('hidden');
+      form.classList.remove('hidden');
+
+      // Populate Inputs
+      document.getElementById('meta-surveyor').value = paper.metadata.surveyor || '';
+      const highlightedValue = paper.metadata.highlightedAvailable === true
+        ? 'YES'
+        : paper.metadata.highlightedAvailable === false
+          ? ''
+          : paper.metadata.highlightedAvailable || '';
+      const highlightedInput = form.querySelector(`input[name="meta-highlighted-available"][value="${highlightedValue}"]`);
+      form.querySelectorAll('input[name="meta-highlighted-available"]').forEach(input => {
+        input.checked = input === highlightedInput;
+      });
+      document.getElementById('meta-title').value = paper.metadata.title || '';
+      document.getElementById('meta-author').value = paper.metadata.author || '';
+      document.getElementById('meta-year').value = paper.metadata.year || '';
+      document.getElementById('meta-pmid').value = paper.metadata.pmid || '';
+
+      // Radio helpers
+      const setRadio = (name, val) => {
+        const input = form.querySelector(`input[name="${name}"][value="${val}"]`);
+        if (input) input.checked = true;
+        else {
+          // Clear if empty/unselected
+          const checked = form.querySelector(`input[name="${name}"]:checked`);
+          if (checked) checked.checked = false;
+        }
+      };
+      const mapValue = (value, replacements) => replacements[value] || value;
+      const setCheckboxes = (name, val) => {
+        const selected = val ? val.split(', ').filter(Boolean) : [];
+        form.querySelectorAll(`input[name="${name}"]`).forEach(input => {
+          input.checked = selected.includes(input.value);
+        });
+      };
+
+      setRadio('q1', paper.q1);
+      setRadio('q2_age', paper.q2.age);
+      setRadio('q2_weight', paper.q2.weight);
+      setRadio('q2_housing', paper.q2.housing);
+      setRadio('q2_cleaning', paper.q2.cleaning);
+      setRadio('q2_dedicated', paper.q2.dedicated);
+      setRadio('q2_counter_sex', paper.q2.counter_sex);
+      setRadio('q2_counter_batch', paper.q2.counter_batch || paper.q2.counter_within || ''); // backward compatibility lookup
+      setRadio('q2_other', paper.q2.other);
+      document.getElementById('q2-other-details').value = paper.q2.otherDetails || '';
+      setRadio('q3', paper.q3);
+      setRadio('q4', paper.q4);
+      setRadio('q5', paper.q5);
+      setRadio('q6', paper.q6 === 'IN NO CASES' ? 'FALSE' : paper.q6);
+
+      // Checkboxes
+      setCheckboxes('q7', paper.q7);
+
+      setRadio('q8', paper.q8 === 'IN NO CASES' ? 'FALSE' : paper.q8);
+      setRadio('q9', mapValue(paper.q9, {
+        YES: 'SEX INCLUDED AS FACTOR',
+        PARTLY: 'SEX ANALYZED SEPARATELY',
+        NO: 'SEX NOT INCLUDED',
+        'NOT APPLICABLE': 'UNCLEAR'
+      }));
+      setCheckboxes('q10', mapValue(paper.q10, {
+        'IN NO CASES': 'NO DIRECT SEX TEST REPORTED',
+        'NOT APPLICABLE': 'UNSPECIFIED / UNCLEAR',
+        'BOTH MAIN EFFECT AND INTERACTION': 'MAIN EFFECT OF SEX, SEX X FACTOR INTERACTION'
+      }));
+      setRadio('q11', paper.q11 === 'NOT APPLICABLE' ? 'NO SUCH CLAIM' : paper.q11);
+      setRadio('q12', paper.q12);
+      setRadio('q13', paper.q13);
+
+      document.getElementById('field-sex-evidence-anchor').value = paper.sexEvidenceAnchor || '';
+      document.getElementById('field-notes').value = paper.notes || '';
+
+      // Close all interactive guidelines details upon switching papers to keep views clean
+      form.querySelectorAll('details').forEach(el => el.removeAttribute('open'));
+
+      renderPapersList();
+    }
+
+    // Helper: Collect current form state values
+    function getFormValues() {
+      const getRadio = (name) => {
+        const sel = form.querySelector(`input[name="${name}"]:checked`);
+        return sel ? sel.value : '';
+      };
+      const getCheckboxes = (name) => {
+        const checked = form.querySelectorAll(`input[name="${name}"]:checked`);
+        return Array.from(checked).map(c => c.value).join(', ');
+      };
+
+      return {
+        metadata: {
+          surveyor: document.getElementById('meta-surveyor').value || '',
+          highlightedAvailable: getRadio('meta-highlighted-available'),
+          title: document.getElementById('meta-title').value || '',
+          author: document.getElementById('meta-author').value || '',
+          year: document.getElementById('meta-year').value || '',
+          pmid: document.getElementById('meta-pmid').value || ''
+        },
+        q1: getRadio('q1'),
+        q2: {
+          age: getRadio('q2_age'),
+          weight: getRadio('q2_weight'),
+          housing: getRadio('q2_housing'),
+          cleaning: getRadio('q2_cleaning'),
+          dedicated: getRadio('q2_dedicated'),
+          counter_sex: getRadio('q2_counter_sex'),
+          counter_batch: getRadio('q2_counter_batch'),
+          other: getRadio('q2_other'),
+          otherDetails: document.getElementById('q2-other-details').value || ''
+        },
+        q3: getRadio('q3'),
+        q4: getRadio('q4'),
+        q5: getRadio('q5'),
+        q6: getRadio('q6'),
+        q7: getCheckboxes('q7'),
+        q8: getRadio('q8'),
+        q9: getRadio('q9'),
+        q10: getCheckboxes('q10'),
+        q11: getRadio('q11'),
+        q12: getRadio('q12'),
+        q13: getRadio('q13'),
+        sexEvidenceAnchor: document.getElementById('field-sex-evidence-anchor').value || '',
+        notes: document.getElementById('field-notes').value || ''
+      };
+    }
+
+    // Update state from UI
+    function saveCurrentActivePaperToState() {
+      if (!activePaperId) return;
+      const index = papers.findIndex(p => p.id === activePaperId);
+      if (index !== -1) {
+        const formVals = getFormValues();
+        papers[index] = { ...papers[index], ...formVals };
+      }
+    }
+
+    // Event listener: Auto save state on changes
+    form.addEventListener('input', () => {
+      saveCurrentActivePaperToState();
+      
+      // Throttle sidebar list rendering so it doesn't stutter as they type
+      clearTimeout(form.saveTimeout);
+      form.saveTimeout = setTimeout(() => {
+        renderPapersList();
+      }, 800);
+    });
+
+    // Add Paper Action
+    function addPaper() {
+      const newPaper = createEmptyPaper();
+      papers.push(newPaper);
+      selectPaper(newPaper.id);
+      showToast('Created new survey record entry!');
+    }
+
+    btnAddPaper.addEventListener('click', addPaper);
+    btnAddPaperPlaceholder.addEventListener('click', addPaper);
+
+    // Export entire workspace database as single consolidated JSON file
+    btnExportAll.addEventListener('click', () => {
+      saveCurrentActivePaperToState();
+      if (papers.length === 0) {
+        showToast('Your workspace is empty. Add papers first!', 'error');
+        return;
+      }
+      const fileData = JSON.stringify(papers, null, 2);
+      const blob = new Blob([fileData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SBIV_MultiPaper_Workspace_Backup.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Workspace backup exported successfully!');
+    });
+
+    // Load full backup file
+    btnLoadAll.addEventListener('click', () => fileInput.click());
+    
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (Array.isArray(parsed)) {
+            papers = parsed;
+            if (papers.length > 0) {
+              selectPaper(papers[0].id);
+            } else {
+              renderPapersList();
+            }
+            showToast('Consolidated workspace loaded successfully!');
+          } else {
+            showToast('Format error: Backup file should be an array of papers.', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to parse file. Make sure it is a valid backup.', 'error');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Print Action
+    btnPrint.addEventListener('click', () => {
+      window.print();
+    });
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
+    function safeFilePart(value, fallback) {
+      const cleaned = String(value || fallback)
+        .replace(/[\s_]+/g, ' ')
+        .replace(/[\\/:*?"<>|]+/g, '')
+        .trim()
+        .slice(0, 70);
+      return cleaned || fallback;
+    }
+
+    function makeTimestamp() {
+      const now = new Date();
+      const pad = (value) => String(value).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const mm = pad(now.getMonth() + 1);
+      const dd = pad(now.getDate());
+      const hh = pad(now.getHours());
+      const min = pad(now.getMinutes());
+      return {
+        display: `${yyyy}-${mm}-${dd} ${hh}:${min}`,
+        file: `${yyyy}-${mm}-${dd}_${hh}${min}`
+      };
+    }
+
+    function answer(value) {
+      return value || 'NO RESPONSE';
+    }
+
+    function buildCompletedSurveyHtml(p, generatedAt) {
+      const submittedAt = generatedAt?.display || makeTimestamp().display;
+      p.generatedAt = submittedAt;
+      const dataJson = JSON.stringify(p, null, 2).replace(/<\/script/gi, '<\\/script');
+      const confounds = [
+        ['Age', p.q2.age],
+        ['Weight', p.q2.weight],
+        ['Housing', p.q2.housing],
+        ['Cleaning', p.q2.cleaning],
+        ['Dedicated apparatus', p.q2.dedicated],
+        ['Sequence/time-of-day counterbalancing', p.q2.counter_sex],
+        ['Batch/temporal counterbalancing', p.q2.counter_batch || p.q2.counter_within],
+        ['Other measures detailed', p.q2.other],
+        ['Other measures description', p.q2.otherDetails]
+      ];
+      const metrics = [
+        ['Sex differences claimed in title/abstract', p.q1],
+        ['ARRIVE guidelines followed', p.q3],
+        ['Study design', p.q4],
+        ['Powered to detect sex differences/interactions', p.q5],
+        ['Statistical assumptions checked', p.q6],
+        ['Statistical method(s)', p.q7 || 'None selected'],
+        ['Sex-related confounders included in analysis', p.q8],
+        ['Sex included in main statistical analysis', p.q9],
+        ['Main effects of sex or Sex x Factor interactions reported', p.q10],
+        ['Inferred sex difference from one-sex-significant pattern', p.q11],
+        ['Sex-difference conclusions statistically justified', p.q12],
+        ['Group sizes specified for each sex', p.q13]
+      ];
+
+      const rows = metrics.map(([label, value]) => `
+        <tr>
+          <th>${escapeHtml(label)}</th>
+          <td>${escapeHtml(answer(value))}</td>
+        </tr>
+      `).join('');
+      const confoundRows = confounds.map(([label, value]) => `
+        <tr>
+          <th>${escapeHtml(label)}</th>
+          <td>${escapeHtml(answer(value))}</td>
+        </tr>
+      `).join('');
+
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBIV Completed Survey - ${escapeHtml(p.metadata.author || 'Unknown')}</title>
+  <style>
+    @page { size: letter; margin: 0.45in; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #111827; margin: 0; background: #f8fafc; font-size: 10.5px; line-height: 1.28; }
+    main { max-width: 8.5in; margin: 0 auto; background: #fff; padding: 0.35in; }
+    h1 { font-size: 18px; margin: 0 0 4px; color: #312e81; }
+    h2 { font-size: 11px; margin: 12px 0 5px; color: #312e81; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 14px; margin-top: 9px; }
+    .field span { display: block; color: #64748b; font-size: 8.5px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em; }
+    .field strong { font-size: 10.5px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #dbe3ee; padding: 4px 6px; vertical-align: top; }
+    th { width: 58%; text-align: left; background: #f1f5f9; color: #334155; font-weight: 700; }
+    td { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .notes { min-height: 0.8in; border: 1px solid #dbe3ee; padding: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .footer { margin-top: 10px; color: #64748b; font-size: 8.5px; }
+    @media print {
+      body { background: #fff; }
+      main { padding: 0; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SBIV Completed Paper Coding Sheet</h1>
+    <div class="meta">
+      <div class="field"><span>Survey completed by</span><strong>${escapeHtml(answer(p.metadata.surveyor))}</strong></div>
+      <div class="field"><span>Highlighted PDF available</span><strong>${escapeHtml(answer(p.metadata.highlightedAvailable))}</strong></div>
+      <div class="field"><span>First author / year</span><strong>${escapeHtml(answer(p.metadata.author))} (${escapeHtml(answer(p.metadata.year))})</strong></div>
+      <div class="field"><span>PMID</span><strong>${escapeHtml(answer(p.metadata.pmid))}</strong></div>
+      <div class="field" style="grid-column: 1 / -1;"><span>Title</span><strong>${escapeHtml(answer(p.metadata.title))}</strong></div>
+    </div>
+    <div class="footer"><strong>Source requirement:</strong> Survey answers should be traceable to highlights in the student's own copy of the paper.</div>
+
+    <div class="two-col">
+      <section>
+        <h2>Procedural Confounds</h2>
+        <table>${confoundRows}</table>
+      </section>
+      <section>
+        <h2>Analysis Coding</h2>
+        <table>${rows}</table>
+      </section>
+    </div>
+
+    <h2>Evidence And Comments For Q9-12</h2>
+    <div class="notes">${escapeHtml(answer(p.sexEvidenceAnchor))}</div>
+
+    <h2>Brief Evidence / Notes</h2>
+    <div class="notes">${escapeHtml(p.notes || 'No notes provided.')}</div>
+    <div class="footer">Generated ${escapeHtml(submittedAt)}. Structured data are embedded in this HTML for later analysis.</div>
+  </main>
+  <script type="application/json" id="sbiv-survey-data">${dataJson}<\/script>
+</body>
+</html>`;
+    }
+
+    function downloadCompletedSurvey() {
+      saveCurrentActivePaperToState();
+      const currentPaper = papers.find(p => p.id === activePaperId);
+      if (!currentPaper) return;
+
+      const author = safeFilePart(currentPaper.metadata.author, 'Unknown author');
+      const title = safeFilePart(currentPaper.metadata.title, 'Untitled paper');
+      const surveyor = safeFilePart(currentPaper.metadata.surveyor, 'Unknown assessor');
+      const generatedAt = makeTimestamp();
+      const filename = `SBIV Survey - ${author} - ${title} - assessed by ${surveyor} - ${generatedAt.file}.html`;
+      const fileData = buildCompletedSurveyHtml(currentPaper, generatedAt);
+      const blob = new Blob([fileData], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Completed survey file downloaded.');
+    }
+
+    function clearSurveyForm() {
+      if (!window.confirm('Clear this form and start a new survey? Download the completed survey first if you need to keep it.')) return;
+      papers = [];
+      addPaper();
+      showToast('Form cleared for the next paper.', 'info');
+    }
+
+    // Generator logic: Markdown builder
+    function buildMarkdownSection(p) {
+      return `### Article Survey: ${answer(p.metadata.author)} (${answer(p.metadata.year)})
+* **Survey Completed By:** ${answer(p.metadata.surveyor)}
+* **Personal Highlighted PDF Available:** \`${answer(p.metadata.highlightedAvailable)}\`
+* **Title:** ${answer(p.metadata.title)}
+* **PMID:** ${answer(p.metadata.pmid)}
+
+#### Evaluation Metrics:
+1. **Claims in Title/Abstract:** \`${p.q1 || 'NO RESPONSE'}\`
+2. **Mitigated Procedural Confounds:**
+   * *Age:* \`${p.q2.age || 'NO RESPONSE'}\`
+   * *Weight:* \`${p.q2.weight || 'NO RESPONSE'}\`
+   * *Housing:* \`${p.q2.housing || 'NO RESPONSE'}\`
+   * *Cleaning:* \`${p.q2.cleaning || 'NO RESPONSE'}\`
+   * *Dedicated Apparatus:* \`${p.q2.dedicated || 'NO RESPONSE'}\`
+   * *Sequence & Time-of-Day Counterbalancing:* \`${p.q2.counter_sex || 'NO RESPONSE'}\`
+   * *Batch & Temporal Counterbalancing:* \`${p.q2.counter_batch || p.q2.counter_within || 'NO RESPONSE'}\`
+   * *Other measures detailed:* \`${p.q2.other || 'NO RESPONSE'}\`
+   * *Other measures description:* \`${answer(p.q2.otherDetails)}\`
+3. **Followed ARRIVE Guidelines:** \`${p.q3 || 'NO RESPONSE'}\`
+4. **Study Design:** \`${p.q4 || 'NO RESPONSE'}\`
+5. **Powered to detect differences:** \`${p.q5 || 'NO RESPONSE'}\`
+6. **Statistical assumptions checked:** \`${p.q6 || 'NO RESPONSE'}\`
+7. **Statistical method(s):** \`${answer(p.q7)}\`
+8. **Confounders included in analysis:** \`${p.q8 || 'NO RESPONSE'}\`
+9. **Sex included in main statistical analysis:** \`${p.q9 || 'NO RESPONSE'}\`
+10. **Main effects of sex or Sex x Factor interactions reported:** \`${p.q10 || 'NO RESPONSE'}\`
+11. **Inferred sex difference from one-sex-significant pattern:** \`${p.q11 || 'NO RESPONSE'}\`
+12. **Sex-difference conclusions statistically justified:** \`${p.q12 || 'NO RESPONSE'}\`
+13. **Group Sizes ("n") Specified:** \`${p.q13 || 'NO RESPONSE'}\`
+
+#### Evidence and comments for Q9-12:
+\`\`\`text
+${answer(p.sexEvidenceAnchor)}
+\`\`\`
+
+#### Notes specific to this article:
+\`\`\`text
+${p.notes || 'No notes provided for this article.'}
+\`\`\`
+
+---
+`;
+    }
+
+    // Download one completed survey file
+    btnSubmit.addEventListener('click', () => {
+      downloadCompletedSurvey();
+    });
+
+    btnClearForm.addEventListener('click', clearSurveyForm);
+
+    // Check scope choice changed
+    document.querySelectorAll('input[name="export-scope"]').forEach(radio => {
+      radio.addEventListener('change', updateMarkdownOutput);
+    });
+
+    // Compile Output markdown strings
+    function updateMarkdownOutput() {
+      const scope = document.querySelector('input[name="export-scope"]:checked').value;
+      let mdText = `# SBIV Literature Survey Consolidated Report\n`;
+      mdText += `**Report Generated:** ${new Date().toLocaleDateString()}\n`;
+      mdText += `**Total Surveyed Papers:** ${papers.length}\n\n`;
+      mdText += `--- \n\n`;
+
+      if (scope === 'current') {
+        const currentPaper = papers.find(p => p.id === activePaperId);
+        if (currentPaper) {
+          mdText += buildMarkdownSection(currentPaper);
+        } else {
+          mdText += `*No paper selected.*\n`;
+        }
+      } else {
+        papers.forEach(paper => {
+          mdText += buildMarkdownSection(paper);
+        });
+      }
+
+      markdownOutput.value = mdText;
+    }
+
+    // Modal control actions
+    btnCloseModal.addEventListener('click', () => modal.classList.add('hidden'));
+    btnDone.addEventListener('click', () => modal.classList.add('hidden'));
+
+    // Clipboard Copy
+    btnCopy.addEventListener('click', () => {
+      markdownOutput.select();
+      try {
+        document.execCommand('copy');
+        showToast('Report copied to clipboard! You are ready to paste in Canvas.');
+      } catch (err) {
+        showToast('Failed to copy. Please manually select all text and copy.', 'error');
+      }
+    });
+
+    // Start with one empty paper ready to go
+    addPaper();
+  </script>
+</body>
+</html>
