@@ -226,7 +226,7 @@
             </div>
             <div class="mt-3">
               <label for="q1-main-anchor" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Short quote only</label>
-              <textarea id="q1-main-anchor" rows="5" maxlength="180" placeholder='e.g., "sex differences in anxiety" / "no sex differences were observed" / "not mentioned"' class="anchor-input"></textarea>
+              <textarea id="q1-main-anchor" rows="5" maxlength="2000" placeholder='e.g., "sex differences in anxiety" / "no sex differences were observed" / "not mentioned"' class="anchor-input"></textarea>
             </div>
           </div>
 
@@ -242,7 +242,7 @@
             </div>
             <div class="mt-3">
               <label for="q1-where-anchor" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Short quote only</label>
-              <textarea id="q1-where-anchor" rows="5" maxlength="180" placeholder='e.g., title phrase / abstract phrase / results sentence / supplementary figure note / "not mentioned"' class="anchor-input"></textarea>
+              <textarea id="q1-where-anchor" rows="5" maxlength="2000" placeholder='e.g., title phrase / abstract phrase / results sentence / supplementary figure note / "not mentioned"' class="anchor-input"></textarea>
             </div>
           </div>
 
@@ -309,7 +309,7 @@
           </div>
           <div class="mt-3">
             <label for="q8-anchor" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Short quote only</label>
-            <textarea id="q8-anchor" rows="5" maxlength="180" placeholder='e.g., "body weight was included as a covariate" / "adjusted for weight" / "not mentioned"' class="anchor-input"></textarea>
+            <textarea id="q8-anchor" rows="5" maxlength="2000" placeholder='e.g., "body weight was included as a covariate" / "adjusted for weight" / "not mentioned"' class="anchor-input"></textarea>
           </div>
 
         </div>
@@ -339,7 +339,7 @@
           </div>
           <div class="mt-3">
             <label for="q4-anchor" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Short quote only</label>
-            <textarea id="q4-anchor" rows="5" maxlength="180" placeholder='e.g., "sample size may have limited detection of sex differences" / "males and females were not tested in parallel cohorts" / "housing conditions may have differed by sex" / "not mentioned"' class="anchor-input"></textarea>
+            <textarea id="q4-anchor" rows="5" maxlength="2000" placeholder='e.g., "sample size may have limited detection of sex differences" / "males and females were not tested in parallel cohorts" / "housing conditions may have differed by sex" / "not mentioned"' class="anchor-input"></textarea>
           </div>
         </div>
 
@@ -380,7 +380,7 @@
       { key: 'counter_scheduling', label: 'Scheduling and Temporal Counterbalancing', prompt: 'Were males and females scheduled in a balanced way across testing order, time of day, sessions, and batches/cohorts so they were not tested at systematically different times?', options: reportedOptions, anchorPlaceholder: 'e.g., "males and females were interleaved across testing times" / "sex was counterbalanced across sessions and batches" / "not mentioned"' },
       { key: 'drug_scaling', label: 'Drug Scaling by Body Weight or Size', prompt: 'If a drug or other dosed manipulation was used, was dose scaled, adjusted, or justified in relation to body weight or another sex-relevant size metric?', options: reportedOptions, anchorPlaceholder: 'e.g., "drug dose was normalized to body weight" / "all animals received 10 mg/kg" / "not mentioned"' },
       { key: 'blinding', label: 'Blinding Relevant to Sex-Related Bias', prompt: 'Was blinding reported in a way that could reduce observer or scoring bias related to knowing the animal sex or sex-linked grouping?', options: reportedOptions, anchorPlaceholder: 'e.g., "experimenters were blind to group" / "scoring was performed blind" / "not mentioned"' },
-      { key: 'estrous', label: 'Female-Specific Cycle Considerations', prompt: 'If relevant, did the paper mention estrous cycle or another female-specific cycle factor as a possible within-sex consideration for interpreting female data?', options: ['Measured / controlled / analyzed', 'Discussed only', 'Explicitly not assessed', 'Unspecified', 'Not applicable'], anchorPlaceholder: 'e.g., "estrous cycle was not assessed" / "estrous cycle was monitored" / "not mentioned"' },
+      { key: 'estrous', label: 'Female-Specific Cycle Considerations', prompt: 'If relevant, did the paper mention estrous cycle or another female-specific cycle factor as a possible within-sex consideration for interpreting female data?', options: ['Measured / controlled / analyzed', 'Explicitly not assessed but discussed', 'Not specified or discussed', 'Not applicable'], anchorPlaceholder: 'e.g., "estrous cycle was not assessed" / "estrous cycle was monitored" / "not mentioned"' },
       { key: 'other', label: 'Other Sex-Relevant Procedural Details', prompt: 'Were any other sex-related procedural details reported, such as sex of experimenter, sex-specific handling, scent controls, or special sex-linked housing procedures?', options: reportedOptions, hasText: true, textLabel: 'If yes, briefly describe the other measure', textPlaceholder: 'Describe the other measure', anchorPlaceholder: 'e.g., "all testing was performed by a female experimenter" / "not mentioned"' }
     ];
 
@@ -490,7 +490,7 @@
             </div>
             <div>
               <label for="q2_${item.key}_anchor" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Short quote only</label>
-              <textarea id="q2_${item.key}_anchor" rows="5" maxlength="180" placeholder='${item.anchorPlaceholder}' class="anchor-input"></textarea>
+              <textarea id="q2_${item.key}_anchor" rows="5" maxlength="2000" placeholder='${item.anchorPlaceholder}' class="anchor-input"></textarea>
             </div>
           </div>
         </div>
@@ -607,6 +607,17 @@
       return value || '';
     }
 
+    function normalizeEstrousValue(value) {
+      if (value === 'Discussed only') return 'Explicitly not assessed but discussed';
+      if (value === 'Explicitly not assessed') return 'Explicitly not assessed but discussed';
+      if (value === 'DISCUSSED ONLY') return 'Explicitly not assessed but discussed';
+      if (value === 'EXPLICITLY NOT ASSESSED') return 'Explicitly not assessed but discussed';
+      if (value === 'UNSPECIFIED') return 'Not specified or discussed';
+      if (value === 'Unspecified') return 'Not specified or discussed';
+      if (value === 'NOT APPLICABLE') return 'Not applicable';
+      return value || '';
+    }
+
     function normalizeSimpleValue(value) {
       if (value === 'TITLE AND ABSTRACT') return 'Title, Abstract';
       if (value === 'NEITHER TITLE NOR ABSTRACT') return 'Remainder of document (including supplementary material)';
@@ -648,7 +659,7 @@
           : item.key === 'apparatus_by_sex'
             ? (paper.q2.apparatus_by_sex || paper.q2.dedicated || paper.q2.assignment || '')
             : (paper.q2[item.key] || '');
-        const normalizedValue = item.key === 'estrous' ? rawValue : normalizeReportedValue(rawValue);
+        const normalizedValue = item.key === 'estrous' ? normalizeEstrousValue(rawValue) : normalizeReportedValue(rawValue);
         if (item.multiSelect) {
           setCheckboxes(`q2_${item.key}`, rawValue);
         } else {
