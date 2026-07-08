@@ -163,6 +163,9 @@
           <div class="no-print mb-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-3 text-xs text-amber-900">
             <strong>Source highlighting required:</strong> Each student must keep their own highlighted copy of the paper. Highlight every sentence, figure, table, legend, or result used to answer this survey so the completed coding sheet can be checked against the source.
           </div>
+          <div class="mb-4 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600">
+            <strong>Checkbox guidance:</strong> For all survey questions below, check all that apply, but do not use multiple selections to hedge. Select only options that are explicitly supported by the paper.
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label for="meta-surveyor" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Survey Completed By</label>
@@ -285,25 +288,26 @@
             </div>
           </details>
 
+          <p class="text-xs text-slate-500 mb-2">Check all that apply.</p>
           <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q8" value="In at least one case" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q8" value="In at least one case" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>In at least one case</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q8" value="No cases" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q8" value="No cases" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>No cases</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q8" value="Explicitly not included" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q8" value="Explicitly not included" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>Explicitly not included</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q8" value="Unspecified" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q8" value="Unspecified" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>Unspecified</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q8" value="Not applicable" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q8" value="Not applicable" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>Not applicable</span>
             </label>
           </div>
@@ -319,21 +323,22 @@
           <p class="text-xs text-slate-500 mb-2">This is most likely to appear in the discussion, but it can be expressed anywhere in the paper.</p>
           <p class="text-xs text-slate-500 mb-2">Do not include estrous cycle-related issues here; code those under the female-specific cycle item in Section 2.</p>
 
+          <p class="text-xs text-slate-500 mb-2">Check all that apply.</p>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q4" value="Yes" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q4" value="Yes" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>Yes</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q4" value="No" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q4" value="No" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>No</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q4" value="Unspecified" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q4" value="Unspecified" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>Unspecified</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm transition">
-              <input type="radio" name="q4" value="Not applicable" class="w-4 h-4 text-indigo-600">
+              <input type="checkbox" name="q4" value="Not applicable" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
               <span>Not applicable</span>
             </label>
           </div>
@@ -374,14 +379,14 @@
     const reportedOptions = ['Reported / present', 'Explicitly not done / not present', 'Unspecified', 'Not applicable'];
     const sectionTwoConfig = [
       { key: 'housing', label: 'Housing', prompt: 'Which sex-related housing issues, if any, were addressed?', options: ['Same-sex cages', 'Other factors considered and addressed', 'Other factors considered but ignored', 'Unspecified'], multiSelect: true, anchorPlaceholder: 'e.g., "animals were housed in same-sex cages" / "males and females were housed in separate rooms" / "not mentioned"' },
-      { key: 'age_balancing', label: 'Age or Developmental-Stage Balance by Sex', prompt: 'Did the paper describe whether males and females were matched, balanced, or otherwise evaluated for possible age or developmental-stage differences that could confound sex comparisons?', options: reportedOptions, anchorPlaceholder: 'e.g., "male and female mice were age-matched" / "subjects were tested at the same developmental stage" / "not mentioned"' },
-      { key: 'cleaning', label: 'Cleaning / Odor Control', prompt: 'Were cleaning procedures, odor controls, or between-animal apparatus procedures described in a way that addressed possible sex-related odor or carryover confounds?', options: reportedOptions, anchorPlaceholder: 'e.g., "the maze was cleaned with 70% ethanol between trials" / "not mentioned"' },
-      { key: 'apparatus_by_sex', label: 'Apparatus Separation or Assignment by Sex', prompt: 'Did the paper describe whether apparatus/chambers were separated by sex or how males and females were assigned across them in a way explicitly tied to sex?', options: reportedOptions, anchorPlaceholder: 'e.g., "separate chambers were used for males and females" / "sexes were counterbalanced across chambers" / "not mentioned"' },
-      { key: 'counter_scheduling', label: 'Scheduling and Temporal Counterbalancing', prompt: 'Were males and females scheduled in a balanced way across testing order, time of day, sessions, and batches/cohorts so they were not tested at systematically different times?', options: reportedOptions, anchorPlaceholder: 'e.g., "males and females were interleaved across testing times" / "sex was counterbalanced across sessions and batches" / "not mentioned"' },
-      { key: 'drug_scaling', label: 'Drug Scaling by Body Weight or Size', prompt: 'If a drug or other dosed manipulation was used, was dose scaled, adjusted, or justified in relation to body weight or another sex-relevant size metric?', options: reportedOptions, anchorPlaceholder: 'e.g., "drug dose was normalized to body weight" / "all animals received 10 mg/kg" / "not mentioned"' },
-      { key: 'blinding', label: 'Blinding Relevant to Sex-Related Bias', prompt: 'Was blinding reported in a way that could reduce observer or scoring bias related to knowing the animal sex or sex-linked grouping?', options: reportedOptions, anchorPlaceholder: 'e.g., "experimenters were blind to group" / "scoring was performed blind" / "not mentioned"' },
-      { key: 'estrous', label: 'Female-Specific Cycle Considerations', prompt: 'If relevant, did the paper mention estrous cycle or another female-specific cycle factor as a possible within-sex consideration for interpreting female data?', options: ['Measured / controlled / analyzed', 'Explicitly not assessed but discussed', 'Not specified or discussed', 'Not applicable'], anchorPlaceholder: 'e.g., "estrous cycle was not assessed" / "estrous cycle was monitored" / "not mentioned"' },
-      { key: 'other', label: 'Other Sex-Relevant Procedural Details', prompt: 'Were any other sex-related procedural details reported, such as sex of experimenter, sex-specific handling, scent controls, or special sex-linked housing procedures?', options: reportedOptions, hasText: true, textLabel: 'If yes, briefly describe the other measure', textPlaceholder: 'Describe the other measure', anchorPlaceholder: 'e.g., "all testing was performed by a female experimenter" / "not mentioned"' }
+      { key: 'age_balancing', label: 'Age or Developmental-Stage Balance by Sex', prompt: 'Did the paper clearly and explicitly say that males and females were age matched, developmentally matched, balanced, or otherwise evaluated for possible age or developmental-stage differences that could confound sex comparisons? Only count this if the authors say this directly, for example with wording like "age-matched."', options: reportedOptions, multiSelect: true, anchorPlaceholder: 'e.g., "male and female mice were age-matched" / "subjects were tested at the same developmental stage" / "not mentioned"' },
+      { key: 'cleaning', label: 'Cleaning / Odor Control', prompt: 'Were cleaning procedures, odor controls, or between-animal apparatus procedures described in a way that addressed possible sex-related odor or carryover confounds?', options: reportedOptions, multiSelect: true, anchorPlaceholder: 'e.g., "the maze was cleaned with 70% ethanol between trials" / "not mentioned"' },
+      { key: 'apparatus_by_sex', label: 'Apparatus Separation or Assignment by Sex', prompt: 'Did the paper describe whether apparatus/chambers were separated by sex or how males and females were assigned across them in a way explicitly tied to sex?', options: reportedOptions, multiSelect: true, anchorPlaceholder: 'e.g., "separate chambers were used for males and females" / "sexes were counterbalanced across chambers" / "not mentioned"' },
+      { key: 'counter_scheduling', label: 'Scheduling and Temporal Counterbalancing', prompt: 'Were males and females scheduled in a balanced way across testing order, time of day, sessions, and batches/cohorts so they were not tested at systematically different times?', options: reportedOptions, multiSelect: true, anchorPlaceholder: 'e.g., "males and females were interleaved across testing times" / "sex was counterbalanced across sessions and batches" / "not mentioned"' },
+      { key: 'drug_scaling', label: 'Drug Scaling by Body Weight or Size', prompt: 'If a drug or other dosed manipulation was used, was dose scaled, adjusted, or justified in relation to body weight or another sex-relevant size metric?', options: reportedOptions, multiSelect: true, anchorPlaceholder: 'e.g., "drug dose was normalized to body weight" / "all animals received 10 mg/kg" / "not mentioned"' },
+      { key: 'blinding', label: 'Blinding Relevant to Sex-Related Bias', prompt: 'Was blinding reported in a way that could reduce observer or scoring bias related to knowing the animal sex or sex-linked grouping?', options: reportedOptions, multiSelect: true, anchorPlaceholder: 'e.g., "experimenters were blind to group" / "scoring was performed blind" / "not mentioned"' },
+      { key: 'estrous', label: 'Female-Specific Cycle Considerations', prompt: 'If relevant, did the paper mention estrous cycle or another female-specific cycle factor as a possible within-sex consideration for interpreting female data?', options: ['Measured / controlled / analyzed', 'Explicitly not assessed but discussed', 'Not specified or discussed', 'Not applicable'], multiSelect: true, anchorPlaceholder: 'e.g., "estrous cycle was not assessed" / "estrous cycle was monitored" / "not mentioned"' },
+      { key: 'other', label: 'Other Sex-Relevant Procedural Details', prompt: 'Were any other sex-related procedural details reported, such as sex of experimenter, sex-specific handling, scent controls, or special sex-linked housing procedures?', options: reportedOptions, multiSelect: true, hasText: true, textLabel: 'If yes, briefly describe the other measure', textPlaceholder: 'Describe the other measure', anchorPlaceholder: 'e.g., "all testing was performed by a female experimenter" / "not mentioned"' }
     ];
 
     let papers = [];
@@ -646,9 +651,9 @@
       document.getElementById('q1-main-anchor').value = paper.anchors?.q1 || paper.anchors?.q1Type || '';
       setCheckboxes('q1_where', normalizeSimpleValue(paper.q1Where));
       document.getElementById('q1-where-anchor').value = paper.anchors?.q1Where || '';
-      setRadio('q8', normalizeQ8Value(paper.q8));
+      setCheckboxes('q8', normalizeQ8Value(paper.q8));
       document.getElementById('q8-anchor').value = paper.anchors?.q8 || '';
-      setRadio('q4', normalizeYesNoValue(paper.q4));
+      setCheckboxes('q4', normalizeYesNoValue(paper.q4));
       document.getElementById('q4-anchor').value = paper.anchors?.q4 || '';
 
       sectionTwoConfig.forEach((item) => {
@@ -661,7 +666,7 @@
             : (paper.q2[item.key] || '');
         const normalizedValue = item.key === 'estrous' ? normalizeEstrousValue(rawValue) : normalizeReportedValue(rawValue);
         if (item.multiSelect) {
-          setCheckboxes(`q2_${item.key}`, rawValue);
+          setCheckboxes(`q2_${item.key}`, item.key === 'housing' ? rawValue : normalizedValue);
         } else {
           setRadio(`q2_${item.key}`, normalizedValue);
         }
@@ -690,7 +695,7 @@
         q2[item.key] = item.multiSelect ? getCheckboxes(`q2_${item.key}`) : getRadio(`q2_${item.key}`);
         q2Anchors[item.key] = document.getElementById(`q2_${item.key}_anchor`)?.value || '';
       });
-      q2.otherDetails = document.getElementById('q2-other-details').value || '';
+        q2.otherDetails = document.getElementById('q2-other-details').value || '';
 
       return {
         metadata: {
@@ -703,8 +708,8 @@
         },
         q1: getCheckboxes('q1'),
         q1Where: getCheckboxes('q1_where'),
-        q8: getRadio('q8'),
-        q4: getRadio('q4'),
+        q8: getCheckboxes('q8'),
+        q4: getCheckboxes('q4'),
         anchors: {
           q1: document.getElementById('q1-main-anchor').value || '',
           q1Where: document.getElementById('q1-where-anchor').value || '',
